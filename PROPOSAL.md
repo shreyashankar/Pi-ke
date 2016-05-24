@@ -20,4 +20,4 @@ Milestone for T-1 week
 
 Resources needed
 
-	3 buttons, 4 hall sensors, switch, 2 lights, batteries, accelerometer, gyroscope/compass, wires instead of breadboard
+	3 buttons, 4 hall sensors, switch, 2 red lights, 1 white light, batteries, accelerometer, gyroscope/compass, wires instead of breadboard
