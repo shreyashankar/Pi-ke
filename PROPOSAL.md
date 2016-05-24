@@ -1,6 +1,6 @@
 #Proposal
 
-Name of the project: Pi-ke
+Name of the project: Pi-ke\n
 Team members and their responsibilities:
 	Shreya: write basic hardware libraries for all sensors
 	Guy: support time, distance, and speed
