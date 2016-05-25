@@ -6,7 +6,7 @@ AS = $(ARMGNU)-as
 OBJCOPY = $(ARMGNU)-objcopy
 OBJDUMP = $(ARMGNU)-objdump
 
-LIBPI = ../../../../libpi
+LIBPI = ../cs107e.github.io/libpi
 
 CPPFLAGS = -I$(LIBPI)//include
 CFLAGS = -std=c99 -Wall -Og -g -ffreestanding $(CPPFLAGS)
