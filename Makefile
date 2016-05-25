@@ -17,7 +17,7 @@ LDLIBS = -lpi -lgcc
 .SUFFIXES: 
 
 NAME = lab7
-SRCS = $(NAME).c cstart.c interrupts.c
+SRCS = $(NAME).c cstart.c interrupts.c armtimer.c
 OBJS = $(SRCS:.c=.o) vectors.o start.o register.o $(LIBPI)/modules/circular.o
 
 all : $(NAME).bin

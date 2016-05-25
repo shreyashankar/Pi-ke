@@ -1,5 +1,7 @@
 #include "armtimer.h"
 
+void armtimer_stop();
+
 typedef volatile struct {
     unsigned IRQ_basic_pending;
     unsigned IRQ_pending_1;
