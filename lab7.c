@@ -8,9 +8,13 @@
 #include "pin_constants.h"
 #include "timer.h"
 #include "armtimer.h"
+#include "printf.h"
+#include "i2c.h"
+#include "accel.h"
+#include "LSM6DS33.h"
 
-#define MIN_INTERVAL 100000
-#define TIMER_INTERVAL 100000
+#define MIN_INTERVAL 300000
+#define TIMER_INTERVAL 10000000
 
 static int left_on;
 static int right_on;
@@ -26,24 +30,26 @@ void impossible_vector(unsigned pc) {
 
 /* we only enable GPIO interrupts, so just forward it blindly  */
 void interrupt_vector(unsigned pc) {
-  //if (!right_on || !left_on) {
-    indicator_handler(pc);
-  //}
+  // if (gpio_read(LEFT_INDICATOR_BUTTON_PIN) == 0 || gpio_read(RIGHT_INDICATOR_BUTTON_PIN) == 0) {
+  //   indicator_handler(pc);
+  // }
   //else {
-    //blink_handler(pc);
+    blink_handler(pc);
   //}
 }
 
 void blink_handler(unsigned pc) {
-  if (left_on) {
+  if (!left_on) {
     if (gpio_read(LEFT_INDICATOR_LIGHT_PIN) == 0) {
+      printf("1 hi\n");
       gpio_write(LEFT_INDICATOR_LIGHT_PIN, 1);
     }
     else {
+      printf("2 hi\n");
       gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
     }
   }
-  else if (right_on) {
+  else if (!right_on) {
     if (gpio_read(RIGHT_INDICATOR_LIGHT_PIN) == 0) {
       gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 1);
     }
@@ -78,7 +84,7 @@ void indicator_handler(unsigned pc) {
       left_on = 1;
       //armtimer_init();
       //armtimer_start(TIMER_INTERVAL);
-      gpio_write(LEFT_INDICATOR_LIGHT_PIN, 1);
+      //gpio_write(LEFT_INDICATOR_LIGHT_PIN, 1);
     }
   }
 
@@ -97,7 +103,7 @@ void indicator_handler(unsigned pc) {
       right_on = 1;
       //armtimer_init();
       //armtimer_start(TIMER_INTERVAL);
-      gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 1);
+      //gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 1);
     }
   }
   current_time = timer_get_time();
@@ -129,12 +135,41 @@ static void setup_interrupts() {
 
 void main(void) {
   
-  setup_interrupts();
+  //TESTING ARMTIMER
   gpio_set_function(LEFT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
   gpio_set_function(RIGHT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
-  current_time = timer_get_time();
-  while(1) {
+  //armtimer_init();
+  printf_init();
+  // armtimer_init(2000000); // 1s 
+  // armtimer_set_prescalar(125); 
+  // armtimer_enable(); 
 
-  }
+  // armtimer_enable_interrupt(); 
+  // interrupts_enable_basic(INTERRUPTS_BASIC_ARM_TIMER_IRQ); 
+  // system_enable_interrupts(); 
+  //setup_interrupts();
+  // armtimer_start(TIMER_INTERVAL);
+  // current_time = timer_get_time();
+  // while(1) {
+
+  // }
+
+  /***************************** MAY 25 WEDNESDAY LAB *****************************/
+
+  //MAGNET STUFF: see halleffect.c for doc. halleffect.c is never run
+
+  /*gpio_set_function(HALL_PIN, GPIO_FUNC_INPUT);
+  gpio_set_pullup(HALL_PIN);
+
+  for(int i = 0; i < 10; i++) {
+      while(gpio_read(HALL_PIN) == 1) {}
+    printf("magnet close!\n");
+      while(gpio_read(HALL_PIN) == 0) {}
+    printf("magnet out of range!\n");
+  }*/ 
+
+  //ACCELEROMETER STUFF
+
+ //run_accel();
   
 }
