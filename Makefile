@@ -48,7 +48,7 @@ clean :
 	rm -f *.list
 
 install: $(NAME).bin
-	rpi-install.py $(NAME).bin
+	rpi-install.py -p $(NAME).bin
 
 .PHONY : all clean
 
