@@ -84,7 +84,7 @@ void indicator_handler(unsigned pc) {
     }
   }
 
-  else if (gpio_check_and_clear_event(RIGHT_INDICATOR_BUTTON_PIN)) {
+  if (gpio_check_and_clear_event(RIGHT_INDICATOR_BUTTON_PIN)) {
     if (left_on) {
       left_on = 0;
       gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
