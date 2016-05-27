@@ -26,8 +26,8 @@
 #include "gpio.h"
 #include "gpioextra.h"
 
-void main(void) {
-	//uart_init();
+void hall_effect(void) {
+
 	const unsigned vout= GPIO_PIN2;
 
   	gpio_set_function(vout, GPIO_FUNC_INPUT);

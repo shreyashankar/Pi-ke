@@ -11,6 +11,7 @@
 #include "printf.h"
 #include "i2c.h"
 #include "accel.h"
+#include "halleffect.h"
 #include "LSM6DS33.h"
 
 #define MIN_INTERVAL 300000
@@ -19,7 +20,7 @@
 static int left_on;
 static int right_on;
 static int current_time;
-static int interval_time;
+static int indicator_interval_time;
 
 void indicator_handler(unsigned);
 void blink_handler(unsigned);
@@ -40,10 +41,10 @@ void interrupt_vector(unsigned pc) {
 }
 
 void blink_handler(unsigned pc) {
-  if (timer_get_time() - interval_time < TIMER_INTERVAL) {
+  if (timer_get_time() - indicator_interval_time < TIMER_INTERVAL) {
     return;
   }
-  interval_time = timer_get_time();
+  indicator_interval_time = timer_get_time();
   if (left_on) {
     if (gpio_read(LEFT_INDICATOR_LIGHT_PIN) == 0) {
       gpio_write(LEFT_INDICATOR_LIGHT_PIN, 1);
@@ -110,52 +111,49 @@ void button_test() {
 }
 
 
-static void setup_interrupts() {
-    gpio_set_function(LEFT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
-    gpio_set_pullup(LEFT_INDICATOR_BUTTON_PIN);
-    gpio_detect_falling_edge(LEFT_INDICATOR_BUTTON_PIN);
-    gpio_detect_rising_edge(LEFT_INDICATOR_BUTTON_PIN);
-    gpio_set_function(RIGHT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
-    gpio_set_pullup(RIGHT_INDICATOR_BUTTON_PIN);
-    gpio_detect_falling_edge(RIGHT_INDICATOR_BUTTON_PIN);
-    gpio_detect_rising_edge(RIGHT_INDICATOR_BUTTON_PIN);
-    interrupts_enable(INTERRUPTS_GPIO3);
-}
-
-
-void main(void) {
-  
-  //TESTING ARMTIMER
+static void setup_indicator_interrupts() {
   gpio_set_function(LEFT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
   gpio_set_function(RIGHT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
-  setup_interrupts();
+  gpio_set_function(LEFT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
+  gpio_set_pullup(LEFT_INDICATOR_BUTTON_PIN);
+  gpio_detect_falling_edge(LEFT_INDICATOR_BUTTON_PIN);
+  gpio_detect_rising_edge(LEFT_INDICATOR_BUTTON_PIN);
+  gpio_set_function(RIGHT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
+  gpio_set_pullup(RIGHT_INDICATOR_BUTTON_PIN);
+  gpio_detect_falling_edge(RIGHT_INDICATOR_BUTTON_PIN);
+  gpio_detect_rising_edge(RIGHT_INDICATOR_BUTTON_PIN);
+  interrupts_enable(INTERRUPTS_GPIO3);
+}
 
-  printf_init();
+static void setup_armtimer_interrupts() {
   armtimer_init(1000000); // 1s 
   armtimer_enable(); 
 
   armtimer_enable_interrupt(); 
   interrupts_enable_basic(INTERRUPTS_BASIC_ARM_TIMER_IRQ);
+}
+
+
+void main(void) {
+  
+  //TESTING LEFT/RIGHT INDICATORS
+  printf_init();
+
+  setup_indicator_interrupts();
+  setup_armtimer_interrupts();
   system_enable_interrupts();
- 
   current_time = timer_get_time();
+  indicator_interval_time = timer_get_time();
+
   while(1) {
 
   }
 
   /***************************** MAY 25 WEDNESDAY LAB *****************************/
 
-  // //MAGNET STUFF: see halleffect.c for doc. halleffect.c is never run
+  // //MAGNET STUFF: see halleffect.c for doc
 
-  // gpio_set_function(HALL_PIN, GPIO_FUNC_INPUT);
-  // gpio_set_pullup(HALL_PIN);
-
-  // for(int i = 0; i < 10; i++) {
-  //     while(gpio_read(HALL_PIN) == 1) {}
-  //   printf("magnet close!\n");
-  //     while(gpio_read(HALL_PIN) == 0) {}
-  //   printf("magnet out of range!\n");
-  // } 
+  //hall_effect();
 
   //ACCELEROMETER STUFF
 
