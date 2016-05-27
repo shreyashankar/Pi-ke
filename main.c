@@ -14,7 +14,7 @@
 #include "LSM6DS33.h"
 
 #define MIN_INTERVAL 300000
-#define TIMER_INTERVAL 10000000
+#define TIMER_INTERVAL 1000000
 
 static int left_on;
 static int right_on;
@@ -129,7 +129,6 @@ static void setup_interrupts() {
     gpio_detect_falling_edge(RIGHT_INDICATOR_BUTTON_PIN);
     gpio_detect_rising_edge(RIGHT_INDICATOR_BUTTON_PIN);
     interrupts_enable(INTERRUPTS_GPIO3);
-    system_enable_interrupts();
 }
 
 
@@ -138,21 +137,19 @@ void main(void) {
   //TESTING ARMTIMER
   gpio_set_function(LEFT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
   gpio_set_function(RIGHT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
-  //armtimer_init();
+
   printf_init();
-  // armtimer_init(2000000); // 1s 
-  // armtimer_set_prescalar(125); 
-  // armtimer_enable(); 
+  armtimer_init(2000000); // 1s 
+  armtimer_enable(); 
 
-  // armtimer_enable_interrupt(); 
-  // interrupts_enable_basic(INTERRUPTS_BASIC_ARM_TIMER_IRQ); 
-  // system_enable_interrupts(); 
-  //setup_interrupts();
-  // armtimer_start(TIMER_INTERVAL);
-  // current_time = timer_get_time();
-  // while(1) {
+  armtimer_enable_interrupt(); 
+  //interrupts_enable_basic(INTERRUPTS_BASIC_ARM_TIMER_IRQ);
+  system_enable_interrupts();
+ 
+  current_time = timer_get_time();
+  while(1) {
 
-  // }
+  }
 
   /***************************** MAY 25 WEDNESDAY LAB *****************************/
 
