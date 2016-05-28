@@ -2,6 +2,13 @@
 #include "timer.h"
 #include "display.h"
 #include "pin_constants.h"
+#include "printf.h"
+
+extern double speed;
+extern double distance;
+
+#define DELAY 2500
+#define MILLION 1000000
 
 /* Initializes the GPIO pins for the display */
 void display_init() {
@@ -13,8 +20,8 @@ void display_init() {
 		gpio_set_output(i);//, GPIO_FUNC_OUTPUT);
 	}
 
-	gpio_set_input(2);//, GPIO_FUNC_INPUT);
-	gpio_set_input(3);//, GPIO_FUNC_INPUT);
+	//gpio_set_input(2);//, GPIO_FUNC_INPUT);
+	//gpio_set_input(3);//, GPIO_FUNC_INPUT);
 
 }
 
@@ -69,23 +76,65 @@ void display_seconds(int seconds) {
 	}
 }
 
+void display_num(double number, int numDec) {
+	for (int i = 0; i < numDec; i++) {
+		number *= 10;
+	}
+	unsigned rounded_number = (unsigned) number;
+	printf("%d\n", rounded_number);
+	for (int digitLoc = 3; digitLoc >= 0; digitLoc--) {
+		display_digit(rounded_number % 10, digitLoc);
+		if (digitLoc == (3 - numDec)) {
+			gpio_write(GPIO_PIN27, 1); //write the period
+		}
+
+		rounded_number /= 10;
+		delay_us(DELAY);
+		clearDigits();
+	}
+}
+
+/* Dispalys the current speed variable with 1 decimal */
+void display_speed() {
+
+	display_num(speed,1);
+
+}
+
+void display_distance() {
+	display_num(distance,2);
+}
+
 
 /* Runs the clock */
 void display_run() {
 	unsigned int start_time = timer_get_time(); //when the clock starts
 	unsigned int offset = 0;  	//used when setting the time
 
+	unsigned mode = 1; 	//0 = time
+						//1 = distance
+						//2 = speed
+
 	while (1) {
 
 		//get the difference since starting in seconds
-		unsigned int time_diff = (timer_get_time() - start_time) / MILLION + offset;
-		display_seconds(time_diff); //display that time
+		switch(mode) {
+			case 0: ;
+				unsigned int time_diff = (timer_get_time() - start_time) / MILLION + offset;
+				display_seconds(time_diff); //display that time
+				break;
+			case 1:
+				display_distance();
+			case 2:
+				display_speed();
+		}
+
 
 		//check if both buttons are pressed; if so, switch modes
-		if ((gpio_read(2) == PRESSED) && (gpio_read(3) == PRESSED)) { //both pressed
+		/*if ((gpio_read(2) == PRESSED) && (gpio_read(3) == PRESSED)) { //both pressed
 			offset = set_time(time_diff); 	//gives number of seconds set to
 			start_time = timer_get_time(); 	//reset start time
-		}
+		}*/
 		
 	}
 }

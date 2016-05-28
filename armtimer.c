@@ -63,8 +63,10 @@ volatile armtimer_t *armtimer = (void*)ARMTIMER_BASE;
  * timer is initialized, but not enabled. interrupts are disabled.
  * 
  */
-void  armtimer_init(unsigned ticks) 
+//void  armtimer_init(unsigned ticks) 
+void armtimer_init(void)
 { 
+    unsigned ticks = 0; // DELETE WHEN YOU KNOW WHAT YOU'RE DOING
     // make sure bit-fields are within 1 word
     AssertNow(sizeof armtimer->control == 4);
 

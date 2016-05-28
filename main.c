@@ -187,6 +187,9 @@ static int right_on;
 static int current_time;
 static int indicator_interval_time;
 
+double speed = 36.2;    //mph
+double distance = 57.81; //miles
+
 void indicator_handler(unsigned);
 void blink_handler(unsigned);
 
