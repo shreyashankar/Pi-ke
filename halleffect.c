@@ -28,7 +28,7 @@
 
 void hall_effect(void) {
 
-	const unsigned vout= GPIO_PIN2;
+	const unsigned vout= GPIO_PIN4;
 
   	gpio_set_function(vout, GPIO_FUNC_INPUT);
   	gpio_set_pullup(vout);
