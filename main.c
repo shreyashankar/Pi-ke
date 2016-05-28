@@ -171,12 +171,13 @@
 #include "interrupts.h"
 #include "pin_constants.h"
 #include "timer.h"
-#include "armtimer.h"
+//#include "armtimer.h"
 #include "printf.h"
 #include "i2c.h"
 #include "accel.h"
 #include "halleffect.h"
 #include "LSM6DS33.h"
+#include "display.h"
 
 #define MIN_INTERVAL 300000
 #define TIMER_INTERVAL 500000
@@ -317,8 +318,9 @@ void main(void) {
 
   // //MAGNET STUFF: see halleffect.c for doc
 
-  hall_effect();
-
+  //hall_effect();
+  display_init();
+  display_run();
   //ACCELEROMETER STUFF
 
  //run_accel();
