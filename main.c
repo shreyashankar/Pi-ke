@@ -189,6 +189,8 @@ static int indicator_interval_time;
 
 double speed = 36.2;    //mph
 double distance = 57.81; //miles
+int mode = 0;
+
 
 void indicator_handler(unsigned);
 void blink_handler(unsigned);
@@ -200,7 +202,7 @@ void impossible_vector(unsigned pc) {
 
 /* we only enable GPIO interrupts, so just forward it blindly  */
 void interrupt_vector(unsigned pc) {
-  if (gpio_read(LEFT_INDICATOR_BUTTON_PIN) == 0 || gpio_read(RIGHT_INDICATOR_BUTTON_PIN) == 0) {
+  if (gpio_read(LEFT_INDICATOR_BUTTON_PIN) == 0 || gpio_read(RIGHT_INDICATOR_BUTTON_PIN) == 0 || gpio_read(CHANGE_MODE_BUTTON_PIN)) {
     indicator_handler(pc);
   }
   else {
@@ -235,6 +237,7 @@ void indicator_handler(unsigned pc) {
   if (timer_get_time() - current_time < MIN_INTERVAL) {
     gpio_check_and_clear_event(LEFT_INDICATOR_BUTTON_PIN);
     gpio_check_and_clear_event(RIGHT_INDICATOR_BUTTON_PIN);
+    gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN);
     current_time = timer_get_time();
     return;
   }
@@ -266,6 +269,10 @@ void indicator_handler(unsigned pc) {
       right_on = 1;
     }
   }
+
+  if (gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN)) {
+    mode = (mode + 1)%3;
+  }
   current_time = timer_get_time();
  
 }
@@ -290,6 +297,12 @@ static void setup_indicator_interrupts() {
   gpio_set_pullup(RIGHT_INDICATOR_BUTTON_PIN);
   gpio_detect_falling_edge(RIGHT_INDICATOR_BUTTON_PIN);
   gpio_detect_rising_edge(RIGHT_INDICATOR_BUTTON_PIN);
+
+  gpio_set_function(CHANGE_MODE_BUTTON_PIN, GPIO_FUNC_INPUT);
+  gpio_set_pullup(CHANGE_MODE_BUTTON_PIN);
+  gpio_detect_falling_edge(CHANGE_MODE_BUTTON_PIN);
+  //gpio_detect_rising_edge(CHANGE_MODE_BUTTON_PIN);
+
   interrupts_enable(INTERRUPTS_GPIO3);
 }
 
@@ -307,11 +320,11 @@ void main(void) {
   //TESTING LEFT/RIGHT INDICATORS
   printf_init();
 
-  //setup_indicator_interrupts();
+  setup_indicator_interrupts();
   //setup_armtimer_interrupts();
-  //system_enable_interrupts();
+  system_enable_interrupts();
   //current_time = timer_get_time();
-  //indicator_interval_time = timer_get_time();
+  indicator_interval_time = timer_get_time();
 
   // while(1) {
 

@@ -3,9 +3,11 @@
 #include "display.h"
 #include "pin_constants.h"
 #include "printf.h"
+#include "assert.h"
 
 extern double speed;
 extern double distance;
+extern int mode;
 
 #define DELAY 2500
 #define MILLION 1000000
@@ -111,22 +113,24 @@ void display_run() {
 	unsigned int start_time = timer_get_time(); //when the clock starts
 	unsigned int offset = 0;  	//used when setting the time
 
-	unsigned mode = 1; 	//0 = time
-						//1 = distance
-						//2 = speed
 
 	while (1) {
 
 		//get the difference since starting in seconds
 		switch(mode) {
+			
 			case 0: ;
 				unsigned int time_diff = (timer_get_time() - start_time) / MILLION + offset;
 				display_seconds(time_diff); //display that time
 				break;
 			case 1:
 				display_distance();
+				break;
 			case 2:
 				display_speed();
+				break;
+			default:
+				assert(0);
 		}
 
 
