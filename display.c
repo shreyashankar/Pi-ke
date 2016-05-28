@@ -73,6 +73,9 @@ void display_seconds(int seconds) {
 	digits[0] = (seconds/ 600) % 6; //minutes tens
 	for (int digitLoc = 0; digitLoc < 4; digitLoc ++) {
 		display_digit(digits[digitLoc], digitLoc);
+		if (digitLoc == 1) {
+			gpio_write(GPIO_PIN27, 1); //write period
+		}
 		delay_us(DELAY);
 		clearDigits();
 	}
