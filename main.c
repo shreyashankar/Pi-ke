@@ -180,8 +180,8 @@
 #include "display.h"
 #include "interrupt_handlers.h"
 
-double speed = 36.2;    //mph
-double distance = 57.81; //miles
+double speed = 0;    //mph
+double distance = 0; //miles
 int mode = 0;
 
 static void setup_lights() {

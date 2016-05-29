@@ -12,11 +12,17 @@
 #define TIMER_INTERVAL 500000
 #define ARMTIMER_INTERVAL 0x10
 
+#define WHEEL_CIRCUMFERENCE 0.001289 // in miles
+#define SPEED_CONSTANT (1000000 * 3600)
+
 static int left_on;
 static int right_on;
 static int current_time;
 static int indicator_interval_time;
+static int last_rev_time;
 
+extern double speed;
+extern double distance;
 extern int mode;
 
 static void mode_vector(unsigned pc);
@@ -98,8 +104,11 @@ static void blink_vector(unsigned pc) {
 }
 
 static void hall_vector(unsigned pc) {
-	if (gpio_check_and_clear_event(HALL_PIN)) {
+	if (gpio_check_and_clear_event(HALL_PIN)) { 
+		distance += WHEEL_CIRCUMFERENCE;
+		speed = (WHEEL_CIRCUMFERENCE / (double) (timer_get_time() - last_rev_time)) * SPEED_CONSTANT;
 		printf("magnet close\n");
+		last_rev_time = timer_get_time();
 	}
 }
 
@@ -138,6 +147,7 @@ void setup_interrupts() {
 	setup_hall_interrupts();
 	indicator_interval_time = timer_get_time();
 	current_time = timer_get_time();
+	last_rev_time = timer_get_time();
 	interrupts_enable(INTERRUPTS_GPIO3);
 }
 
