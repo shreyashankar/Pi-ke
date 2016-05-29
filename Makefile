@@ -16,7 +16,7 @@ CFLAGS = -I$(CS107E)/libpi/include -I./include -g -Wall -Og -std=c99 -ffreestand
 
 # Your application code: edit to change what is part of your executable
 # The source files need to be in the local directory.
-override OBJECTS += start.o cstart.o vectors.o accel.o halleffect.o i2c.o display.o
+override OBJECTS += start.o cstart.o vectors.o accel.o halleffect.o i2c.o display.o interrupt_handlers.o
 
 # Your library modules: edit to change which code of yours is in libpi
 # The source files need to be in the local directory.

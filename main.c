@@ -178,6 +178,7 @@
 #include "halleffect.h"
 #include "LSM6DS33.h"
 #include "display.h"
+#include "interrupt_handlers.h"
 
 #define MIN_INTERVAL 300000
 #define TIMER_INTERVAL 500000
@@ -201,14 +202,14 @@ void impossible_vector(unsigned pc) {
 }
 
 /* we only enable GPIO interrupts, so just forward it blindly  */
-void interrupt_vector(unsigned pc) {
+/*void interrupt_vector(unsigned pc) {
   if (gpio_read(LEFT_INDICATOR_BUTTON_PIN) == 0 || gpio_read(RIGHT_INDICATOR_BUTTON_PIN) == 0 || gpio_read(CHANGE_MODE_BUTTON_PIN)) {
     indicator_handler(pc);
   }
   else {
     blink_handler(pc);
   }
-}
+}*/
 
 void blink_handler(unsigned pc) {
   if (timer_get_time() - indicator_interval_time < TIMER_INTERVAL) {
@@ -319,12 +320,12 @@ void main(void) {
   
   //TESTING LEFT/RIGHT INDICATORS
   printf_init();
-
-  setup_indicator_interrupts();
+  setup_interrupts();
+  //setup_indicator_interrupts();
   //setup_armtimer_interrupts();
   system_enable_interrupts();
-  //current_time = timer_get_time();
-  indicator_interval_time = timer_get_time();
+  current_time = timer_get_time();
+  
 
   // while(1) {
 
