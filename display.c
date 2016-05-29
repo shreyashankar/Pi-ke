@@ -86,7 +86,6 @@ void display_num(double number, int numDec) {
 		number *= 10;
 	}
 	unsigned rounded_number = (unsigned) number;
-	printf("%d\n", rounded_number);
 	for (int digitLoc = 3; digitLoc >= 0; digitLoc--) {
 		display_digit(rounded_number % 10, digitLoc);
 		if (digitLoc == (3 - numDec)) {

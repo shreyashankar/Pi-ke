@@ -4,7 +4,7 @@
 #include "interrupts.h"
 #include "timer.h"
 
-#define MIN_INTERVAL 3000000
+#define MIN_INTERVAL 300000
 #define TIMER_INTERVAL 500000
 
 static int left_on;
@@ -15,6 +15,8 @@ static int indicator_interval_time;
 extern int mode;
 
 void clear_debouncing() {
+	printf("before\n");
+	printf("%d\n", timer_get_time() - current_time );
 	if (timer_get_time() - current_time < MIN_INTERVAL) {
 		printf("here\n");
     	gpio_clear_event(LEFT_INDICATOR_BUTTON_PIN);
@@ -60,4 +62,5 @@ void mode_vector(pc) {
 	if (gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN)) {
 		mode = (mode + 1) % 3;
 	}
+	current_time = timer_get_time();
 }
