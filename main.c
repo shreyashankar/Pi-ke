@@ -180,152 +180,29 @@
 #include "display.h"
 #include "interrupt_handlers.h"
 
-#define MIN_INTERVAL 300000
-#define TIMER_INTERVAL 500000
-
-static int left_on;
-static int right_on;
-static int current_time;
-static int indicator_interval_time;
-
 double speed = 36.2;    //mph
 double distance = 57.81; //miles
 int mode = 0;
 
-
-void indicator_handler(unsigned);
-void blink_handler(unsigned);
-
-// should not get called.
-void impossible_vector(unsigned pc) {
-  printf("impossible exception at pc=%x\n", pc);
-}
-
-/* we only enable GPIO interrupts, so just forward it blindly  */
-/*void interrupt_vector(unsigned pc) {
-  if (gpio_read(LEFT_INDICATOR_BUTTON_PIN) == 0 || gpio_read(RIGHT_INDICATOR_BUTTON_PIN) == 0 || gpio_read(CHANGE_MODE_BUTTON_PIN)) {
-    indicator_handler(pc);
-  }
-  else {
-    blink_handler(pc);
-  }
-}*/
-
-void blink_handler(unsigned pc) {
-  if (timer_get_time() - indicator_interval_time < TIMER_INTERVAL) {
-    return;
-  }
-  indicator_interval_time = timer_get_time();
-  if (left_on) {
-    if (gpio_read(LEFT_INDICATOR_LIGHT_PIN) == 0) {
-      gpio_write(LEFT_INDICATOR_LIGHT_PIN, 1);
-    }
-    else {
-      gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
-    }
-  }
-  else if (right_on) {
-    if (gpio_read(RIGHT_INDICATOR_LIGHT_PIN) == 0) {
-      gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 1);
-    }
-    else {
-      gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 0);
-    }
-  }
-}
-
-void indicator_handler(unsigned pc) {
-  if (timer_get_time() - current_time < MIN_INTERVAL) {
-    gpio_check_and_clear_event(LEFT_INDICATOR_BUTTON_PIN);
-    gpio_check_and_clear_event(RIGHT_INDICATOR_BUTTON_PIN);
-    gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN);
-    current_time = timer_get_time();
-    return;
-  }
-
-  if (gpio_check_and_clear_event(LEFT_INDICATOR_BUTTON_PIN)) {
-    if (right_on) {
-      right_on = 0;
-      gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 0);
-    }
-    if (left_on) {
-      left_on = 0;
-      gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
-    }
-    else {
-      left_on = 1;
-    }
-  }
-
-  if (gpio_check_and_clear_event(RIGHT_INDICATOR_BUTTON_PIN)) {
-    if (left_on) {
-      left_on = 0;
-      gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
-    }
-    if (right_on) {
-      right_on = 0;
-      gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 0);
-    }
-    else {
-      right_on = 1;
-    }
-  }
-
-  if (gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN)) {
-    mode = (mode + 1)%3;
-  }
-  current_time = timer_get_time();
- 
-}
-
-void button_test() {
-  gpio_set_function(GPIO_PIN21, GPIO_FUNC_INPUT);
-  gpio_set_pullup(GPIO_PIN21);
-  while (gpio_read(GPIO_PIN21) == 1);
-  printf("+");
-  while (gpio_read(GPIO_PIN21) == 0);
-}
-
-
-static void setup_indicator_interrupts() {
+static void setup_lights() {
   gpio_set_function(LEFT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
   gpio_set_function(RIGHT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
-  gpio_set_function(LEFT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
-  gpio_set_pullup(LEFT_INDICATOR_BUTTON_PIN);
-  gpio_detect_falling_edge(LEFT_INDICATOR_BUTTON_PIN);
-  gpio_detect_rising_edge(LEFT_INDICATOR_BUTTON_PIN);
-  gpio_set_function(RIGHT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
-  gpio_set_pullup(RIGHT_INDICATOR_BUTTON_PIN);
-  gpio_detect_falling_edge(RIGHT_INDICATOR_BUTTON_PIN);
-  gpio_detect_rising_edge(RIGHT_INDICATOR_BUTTON_PIN);
-
-  gpio_set_function(CHANGE_MODE_BUTTON_PIN, GPIO_FUNC_INPUT);
-  gpio_set_pullup(CHANGE_MODE_BUTTON_PIN);
-  gpio_detect_falling_edge(CHANGE_MODE_BUTTON_PIN);
-  //gpio_detect_rising_edge(CHANGE_MODE_BUTTON_PIN);
-
-  interrupts_enable(INTERRUPTS_GPIO3);
 }
 
-static void setup_armtimer_interrupts() {
+/*static void setup_armtimer_interrupts() {
   armtimer_init(1000000); // 1s 
   armtimer_enable(); 
 
   armtimer_enable_interrupt(); 
   interrupts_enable_basic(INTERRUPTS_BASIC_ARM_TIMER_IRQ);
-}
-
+}*/
 
 void main(void) {
   
-  //TESTING LEFT/RIGHT INDICATORS
   printf_init();
+  setup_lights();
   setup_interrupts();
-  //setup_indicator_interrupts();
-  //setup_armtimer_interrupts();
   system_enable_interrupts();
-  current_time = timer_get_time();
-  
 
   // while(1) {
 

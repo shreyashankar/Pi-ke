@@ -1,11 +1,16 @@
 /* Interrupt Handlers */
 #include "gpio.h"
+#include "gpioextra.h"
+#include "gpioevent.h"
+#include "armtimer.h"
 #include "pin_constants.h"
 #include "interrupts.h"
 #include "timer.h"
+#include "printf.h"
 
 #define MIN_INTERVAL 300000
 #define TIMER_INTERVAL 500000
+#define ARMTIMER_INTERVAL 0x10
 
 static int left_on;
 static int right_on;
@@ -14,25 +19,89 @@ static int indicator_interval_time;
 
 extern int mode;
 
-void clear_debouncing() {
-	printf("before\n");
-	printf("%d\n", timer_get_time() - current_time );
-	if (timer_get_time() - current_time < MIN_INTERVAL) {
-		printf("here\n");
-    	gpio_clear_event(LEFT_INDICATOR_BUTTON_PIN);
-    	gpio_clear_event(RIGHT_INDICATOR_BUTTON_PIN);
-    	gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN);
-    	current_time = timer_get_time();
+static void mode_vector(unsigned pc);
+static void left_indicator_vector(unsigned pc);
+static void right_indicator_vector(unsigned pc);
+static void blink_vector(unsigned pc);
+
+void interrupt_vector(unsigned pc) {
+  	mode_vector(pc);
+	left_indicator_vector(pc);
+	right_indicator_vector(pc);
+	blink_vector(pc);
+}
+
+static void mode_vector(unsigned pc) {
+	if (gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN) && (timer_get_time() - current_time) > MIN_INTERVAL) {
+		mode = (mode + 1) % 3;
+		current_time = timer_get_time();
+	}
+}
+
+static void left_indicator_vector(unsigned pc) {
+  	if (gpio_check_and_clear_event(LEFT_INDICATOR_BUTTON_PIN) && (timer_get_time() - current_time) > MIN_INTERVAL) {
+    		if (right_on) {
+      			right_on = 0;
+      			gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 0);
+    		}
+		
+		if (left_on) {
+      			left_on = 0;
+      			gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
+    		} else {
+      			left_on = 1;
+    		}
+		current_time = timer_get_time();
   	}
 }
 
-void interrupt_vector(unsigned pc) {
-	clear_debouncing();
-  	mode_vector();                                                                
+static void right_indicator_vector(unsigned pc) {
+	if (gpio_check_and_clear_event(RIGHT_INDICATOR_BUTTON_PIN) && (timer_get_time() - current_time) > MIN_INTERVAL) {
+    		if (left_on) {
+      			left_on = 0;
+      			gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
+    		} 
+		
+		if (right_on) {
+      			right_on = 0;
+      			gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 0);
+    		} else {
+      			right_on = 1;
+    		}
+		current_time = timer_get_time();
+  	}
+}
+
+static void blink_vector(unsigned pc) {
+	armtimer_clear_interrupt();
+  	if (timer_get_time() - indicator_interval_time < TIMER_INTERVAL) {
+    		return;
+  	}
+  	indicator_interval_time = timer_get_time();
+
+  	if (left_on) {
+    		if (gpio_read(LEFT_INDICATOR_LIGHT_PIN) == 0) {
+      			gpio_write(LEFT_INDICATOR_LIGHT_PIN, 1);
+    		} else {
+      			gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
+    		}
+  	} else if (right_on) {
+    		if (gpio_read(RIGHT_INDICATOR_LIGHT_PIN) == 0) {
+      			gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 1);
+    		} else {
+      			gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 0);
+    		}
+  	}
 }
 
 static void setup_indicator_interrupts() {
-	//todo
+	gpio_set_function(LEFT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
+ 	gpio_set_pullup(LEFT_INDICATOR_BUTTON_PIN);
+ 	gpio_detect_falling_edge(LEFT_INDICATOR_BUTTON_PIN);
+
+	gpio_set_function(RIGHT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
+ 	gpio_set_pullup(RIGHT_INDICATOR_BUTTON_PIN);
+ 	gpio_detect_falling_edge(RIGHT_INDICATOR_BUTTON_PIN);
 }
 
 static void setup_mode_interrupts() {
@@ -41,10 +110,15 @@ static void setup_mode_interrupts() {
  	gpio_detect_falling_edge(CHANGE_MODE_BUTTON_PIN);
 }
 
+static void setup_armtimer_interrupts() {
+	armtimer_init();
+	armtimer_start(ARMTIMER_INTERVAL);
+}
 
 void setup_interrupts() {
-	setup_indicator_interrupts();
 	setup_mode_interrupts();
+	setup_indicator_interrupts();
+	setup_armtimer_interrupts();
 	indicator_interval_time = timer_get_time();
 	current_time = timer_get_time();
 	interrupts_enable(INTERRUPTS_GPIO3);
@@ -57,10 +131,6 @@ void undefined_instruction_vector(int pc) {}
 void software_interrupt_vector(int pc) {}
 void prefetch_abort_vector(int pc) {}
 void data_abort_vector(int pc) {}
-
-void mode_vector(pc) {
-	if (gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN)) {
-		mode = (mode + 1) % 3;
-	}
-	current_time = timer_get_time();
+void impossible_vector(unsigned pc) {
+  printf("impossible exception at pc=%x\n", pc);
 }
