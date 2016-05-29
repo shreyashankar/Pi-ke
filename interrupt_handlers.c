@@ -22,15 +22,18 @@ extern int mode;
 static void mode_vector(unsigned pc);
 static void left_indicator_vector(unsigned pc);
 static void right_indicator_vector(unsigned pc);
+static void hall_vector(unsigned pc);
 static void blink_vector(unsigned pc);
 
 void interrupt_vector(unsigned pc) {
   	mode_vector(pc);
 	left_indicator_vector(pc);
 	right_indicator_vector(pc);
+	hall_vector(pc);
 	blink_vector(pc);
 }
 
+/*** INTERRUPT HANDLING VECTORS ***/
 static void mode_vector(unsigned pc) {
 	if (gpio_check_and_clear_event(CHANGE_MODE_BUTTON_PIN) && (timer_get_time() - current_time) > MIN_INTERVAL) {
 		mode = (mode + 1) % 3;
@@ -94,6 +97,13 @@ static void blink_vector(unsigned pc) {
   	}
 }
 
+static void hall_vector(unsigned pc) {
+	if (gpio_check_and_clear_event(HALL_PIN)) {
+		printf("magnet close\n");
+	}
+}
+
+/*** INTERRUPT SETUP ***/
 static void setup_indicator_interrupts() {
 	gpio_set_function(LEFT_INDICATOR_BUTTON_PIN, GPIO_FUNC_INPUT);
  	gpio_set_pullup(LEFT_INDICATOR_BUTTON_PIN);
@@ -115,10 +125,17 @@ static void setup_armtimer_interrupts() {
 	armtimer_start(ARMTIMER_INTERVAL);
 }
 
+static void setup_hall_interrupts() {
+	gpio_set_function(HALL_PIN, GPIO_FUNC_INPUT);
+ 	gpio_set_pullup(HALL_PIN);
+ 	gpio_detect_falling_edge(HALL_PIN);
+}
+
 void setup_interrupts() {
 	setup_mode_interrupts();
 	setup_indicator_interrupts();
 	setup_armtimer_interrupts();
+	setup_hall_interrupts();
 	indicator_interval_time = timer_get_time();
 	current_time = timer_get_time();
 	interrupts_enable(INTERRUPTS_GPIO3);
