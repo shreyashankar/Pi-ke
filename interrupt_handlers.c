@@ -13,7 +13,8 @@
 #define ARMTIMER_INTERVAL 0x10
 
 #define WHEEL_CIRCUMFERENCE 0.001289 // in miles
-#define SPEED_CONSTANT (1000000 * 3600)
+#define MICROSECONDS_IN_SECOND 1000000
+#define SECONDS_IN_HOUR 3600
 
 static int left_on;
 static int right_on;
@@ -106,7 +107,10 @@ static void blink_vector(unsigned pc) {
 static void hall_vector(unsigned pc) {
 	if (gpio_check_and_clear_event(HALL_PIN)) { 
 		distance += WHEEL_CIRCUMFERENCE;
-		speed = (WHEEL_CIRCUMFERENCE / (double) (timer_get_time() - last_rev_time)) * SPEED_CONSTANT;
+		double time_diff = (double) (timer_get_time() - last_rev_time);
+		time_diff /= MICROSECONDS_IN_SECOND;
+		time_diff /= SECONDS_IN_HOUR;
+		speed = WHEEL_CIRCUMFERENCE / time_diff; 
 		printf("magnet close\n");
 		last_rev_time = timer_get_time();
 	}
