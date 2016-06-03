@@ -57,7 +57,7 @@ test.bin: libpi test.o $(OBJECTS)
 
 # The install target uploads freshly made binary image to rpi bootloader
 install: main.bin
-	rpi-install.py -p main.bin
+	rpi-install.py main.bin
 
 # Since this depends on test.bin, it triggers test.bin to be compiled
 # and install the tests binary image to rpi bootloader

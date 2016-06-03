@@ -21,10 +21,12 @@ static int right_on;
 static int current_time;
 static int indicator_interval_time;
 static int last_rev_time;
+static double prev_speed = 0;
 
 extern double speed;
 extern double distance;
 extern int mode;
+extern double acceleration;
 
 static void mode_vector(unsigned pc);
 static void left_indicator_vector(unsigned pc);
@@ -111,6 +113,8 @@ static void hall_vector(unsigned pc) {
 		time_diff /= MICROSECONDS_IN_SECOND;
 		time_diff /= SECONDS_IN_HOUR;
 		speed = WHEEL_CIRCUMFERENCE / time_diff; 
+    prev_speed = speed;
+    acceleration = (speed - prev_speed) / time_diff;
 		printf("magnet close\n");
 		last_rev_time = timer_get_time();
 	}

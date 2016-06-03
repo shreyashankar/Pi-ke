@@ -183,6 +183,7 @@
 double speed = 0;    //mph
 double distance = 0; //miles
 int mode = 0;
+double acceleration = 0;
 
 static void setup_lights() {
   gpio_set_function(LEFT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
