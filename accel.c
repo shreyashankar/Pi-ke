@@ -59,6 +59,7 @@ unsigned readReg(unsigned char reg) {
 
 void run_accel(void) {
 	uart_init();
+	timer_init();
 	delay_ms(30);   // allow time for device to boot up.
 	i2c_init();
 	delay_ms(30);   // allow time to settle after init.
@@ -90,6 +91,8 @@ void run_accel(void) {
 	printf("whoami=%x\n", readReg(WHO_AM_I));
 
 	int cnt = 0;
+	unsigned int curr_time;
+	unsigned int begin = timer_get_time();
 	while(1) { 
 		unsigned char status;
 		// need to check GDA/XDA
@@ -97,7 +100,7 @@ void run_accel(void) {
 			;
 	
 		// p26 interprets the data.
-		unsigned x,y,z;
+		int x,y,z;
 		if(status & 0x2) {
 			x =  readReg(OUTX_L_G);
 			x |= readReg(OUTX_H_G) << 8;
@@ -108,15 +111,17 @@ void run_accel(void) {
 			z =  readReg(OUTZ_L_G);
 			z |= readReg(OUTZ_H_G) << 8;
 	
-			if(cnt%100==0)
-			printf("gyro=(%dmg,%dmg,%dmg)", 
-						(unsigned)(x*.061),
-						(unsigned)(y*.061),
-						(unsigned)(z*.061));
+			if(cnt%100==0) {
+				// curr_time = timer_get_time() - begin;
+				// printf("time: %d, gyro=(%dmg,%dmg,%dmg)", curr_time,
+				// 		(unsigned)(x*.061),
+				// 		(unsigned)(y*.061),
+				// 		(unsigned)(z*.061));
+			}
 		}
-		if((status & 0x1) == 0) {
-			if(cnt%100==0) printf("\n");
-		} else { 
+		//if((status & 0x1) == 0) {
+			//if(cnt%100==0) printf("\n");
+		//} else { 
 			x =  readReg(OUTX_L_XL);
 			x |= readReg(OUTX_H_XL) << 8;
 	
@@ -126,12 +131,14 @@ void run_accel(void) {
 			z =  readReg(OUTZ_L_XL);
 			z |= readReg(OUTZ_H_XL) << 8;
 	
-			if(cnt%100==0)
-			printf("\taccel=(%dmg,%dmg,%dmg)\n", 
-						(unsigned)(x*.061),
-						(unsigned)(y*.061),
-						(unsigned)(z*.061));
-		}
+			if(cnt%100==0) {
+				curr_time = timer_get_time() - begin;
+				printf("time: %d, accel=(%dmg,%dmg,%dmg)\n", curr_time,
+							(int)(x*.061),
+							(int)(y*.061),
+							(int)(z*.061));
+			}
+		//}
 		cnt++;
 	}
 	//reboot();

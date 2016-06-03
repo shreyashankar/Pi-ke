@@ -213,10 +213,10 @@ void main(void) {
   // //MAGNET STUFF: see halleffect.c for doc
 
   //hall_effect();
-  display_init();
-  display_run();
+  //display_init();
+  //display_run();
   //ACCELEROMETER STUFF
 
- //run_accel();
+ run_accel();
   
 }
