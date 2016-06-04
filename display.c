@@ -119,7 +119,7 @@ void display_run() {
 
 
 	while (1) {
-
+		//printf("%d\n", (int) absolute_turn);
 		//get the difference since starting in seconds
 		switch(mode) {
 			

@@ -14,7 +14,7 @@ const unsigned lsm6ds33_address = 0b1101011; // this is the gyro/accel;
 double absolute_turn = 0;
 
 #define STABLE_Z (-193.8)	//these three values determined experimentaly
-#define SCALING_FACTOR (114577212)
+#define SCALING_FACTOR (101973718)
 
 void writeReg(unsigned char reg, unsigned char v) {
 	char data[2];
@@ -66,6 +66,7 @@ void gyro_delay(unsigned delay_micro) {
 
 			unsigned int current_time = timer_get_time();
 			absolute_turn += (((double)z - STABLE_Z) * (current_time - prev_time)) / SCALING_FACTOR;
+			
 			prev_time = current_time;
 		}
 
