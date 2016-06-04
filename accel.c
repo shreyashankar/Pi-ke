@@ -41,6 +41,15 @@
 
 const unsigned vdd = GPIO_PIN6;
 const unsigned lsm6ds33_address = 0b1101011; // this is the gyro/accel;
+static double absoluteTurn = 0;
+
+#define STABLE_Z (-193.8)	//these three values determined experimentaly
+#define DEGREE_FACTOR (15538)
+#define TIME_FACTOR (7374)
+#define SCALING_FACTOR (114577212)
+
+
+static double turn = 0;
 
 void writeReg(unsigned char reg, unsigned char v) {
 	char data[2];
@@ -93,6 +102,11 @@ void run_accel(void) {
 	int cnt = 0;
 	unsigned int curr_time;
 	unsigned int begin = timer_get_time();
+	double sum = 0;
+	int count = 0;
+	double timeDiff;
+	unsigned int prevTime = begin;
+
 	while(1) { 
 		unsigned char status;
 		// need to check GDA/XDA
@@ -100,8 +114,41 @@ void run_accel(void) {
 			;
 	
 		// p26 interprets the data.
-		int x,y,z;
+		short x,y,z;
 		if(status & 0x2) {
+			unsigned char x1, x2, y1, y2, z1, z2;
+			x1 = readReg(OUTX_L_G);
+			x2 = readReg(OUTX_H_G);
+
+			y1 = readReg(OUTY_L_G);
+			y2 = readReg(OUTY_H_G);
+
+			z1 = readReg(OUTZ_L_G);
+			z2 = readReg(OUTZ_H_G);
+
+			x = (x2 << 8) | x1;
+			y = (y2 << 8) | y1;
+			z = (z2 << 8) | z1;
+
+			//double zScaled = z * .061 - avgZ;
+			//absoluteTurn += zScaled;
+			unsigned int currentTime = timer_get_time();
+			timeDiff = ((double)(currentTime - prevTime)) / TIME_FACTOR;
+			//absoluteTurn += ((double)z - STABLE_Z) * timeDiff;
+			absoluteTurn += (((double)z - STABLE_Z) * (currentTime - prevTime)) / SCALING_FACTOR;
+			//printf("%d\n", currentTime - prevTime);
+			prevTime = currentTime;
+			//absoluteTurn += ((double)z - STABLE_Z) / DEGREE_FACTOR;
+			//absoluteTurn += ((double)z - STABLE_Z);
+			count ++;
+
+
+
+
+			delay_ms(10);
+
+
+			/*
 			x =  readReg(OUTX_L_G);
 			x |= readReg(OUTX_H_G) << 8;
 	
@@ -109,35 +156,52 @@ void run_accel(void) {
 			y |= readReg(OUTY_H_G) << 8;
 	
 			z =  readReg(OUTZ_L_G);
-			z |= readReg(OUTZ_H_G) << 8;
+			z |= readReg(OUTZ_H_G) << 8;*/
+
+
+			//sum += z;
+			//count++;
 	
 			if(cnt%100==0) {
-				// curr_time = timer_get_time() - begin;
-				// printf("time: %d, gyro=(%dmg,%dmg,%dmg)", curr_time,
-				// 		(unsigned)(x*.061),
-				// 		(unsigned)(y*.061),
-				// 		(unsigned)(z*.061));
+				//curr_time = timer_get_time() - begin;
+				//printf("%d\n", (int) (sum / count * 10000));
+				// printf("time: %d, gyro=(%dmg,%dmg,%dmg)\n", curr_time,
+				// 		(int)(x*.061),
+				// 		(int)(y*.061),
+				// 		(int)(z*.061));
+				//printf("Turn: %d\n", (int) absoluteTurn / DEGREE_FACTOR);
+				printf("Turn: %d\n", (int) absoluteTurn);
+				//printf("time diff: %d\n", (int) (timeDiff*10000));// * 10000000);
+				//printf("Avg time: %d\n", (int) (timeDiff / count * 1000));
+				//printf("Turn: %d\n", (int) absoluteTurn / 1000);
+				/*printf("time: %d, gyro=(%dmg,%dmg,%dmg)\n", curr_time,
+						x,y,z);*/
 			}
 		}
 		//if((status & 0x1) == 0) {
 			//if(cnt%100==0) printf("\n");
 		//} else { 
-			x =  readReg(OUTX_L_XL);
-			x |= readReg(OUTX_H_XL) << 8;
+			unsigned char x1, x2, y1, y2, z1, z2;
+			x1 = readReg(OUTX_L_XL);
+			x2 = readReg(OUTX_H_XL);
+
+			y1 = readReg(OUTY_L_XL);
+			y2 = readReg(OUTY_H_XL);
+
+			z1 = readReg(OUTZ_L_XL);
+			z2 = readReg(OUTZ_H_XL);
+
+			x = (x2 << 8) | x1;
+			y = (y2 << 8) | y1;
+			z = (z2 << 8) | z1;
 	
-			y =  readReg(OUTY_L_XL);
-			y |= readReg(OUTY_H_XL) << 8;
-	
-			z =  readReg(OUTZ_L_XL);
-			z |= readReg(OUTZ_H_XL) << 8;
-	
-			if(cnt%100==0) {
-				curr_time = timer_get_time() - begin;
-				printf("time: %d, accel=(%dmg,%dmg,%dmg)\n", curr_time,
-							(int)(x*.061),
-							(int)(y*.061),
-							(int)(z*.061));
-			}
+			// if(cnt%50==0) {
+			// 	curr_time = timer_get_time() - begin;
+			// 	printf("time: %d, accel=(%dmg,%dmg,%dmg)\n", curr_time,
+			// 				(int)(x*.061),
+			// 				(int)(y*.061),
+			// 				(int)(z*.061));
+			// }
 		//}
 		cnt++;
 	}

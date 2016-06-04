@@ -4,13 +4,17 @@
 #include "pin_constants.h"
 #include "printf.h"
 #include "assert.h"
+#include "gyro.h"
 
 extern double speed;
 extern double distance;
 extern int mode;
+extern double absolute_turn;
 
 #define DELAY 2500
 #define MILLION 1000000
+
+static 
 
 /* Initializes the GPIO pins for the display */
 void display_init() {
@@ -76,7 +80,7 @@ void display_seconds(int seconds) {
 		if (digitLoc == 1) {
 			gpio_write(GPIO_PIN27, 1); //write period
 		}
-		delay_us(DELAY);
+		gyro_delay(DELAY);
 		clearDigits();
 	}
 }
@@ -93,7 +97,7 @@ void display_num(double number, int numDec) {
 		}
 
 		rounded_number /= 10;
-		delay_us(DELAY);
+		gyro_delay(DELAY);
 		clearDigits();
 	}
 }
@@ -101,7 +105,7 @@ void display_num(double number, int numDec) {
 /* Dispalys the current speed variable with 1 decimal */
 void display_speed() {
 
-	display_num(speed,1);
+	display_num(absolute_turn,1);
 
 }
 

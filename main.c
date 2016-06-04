@@ -179,6 +179,7 @@
 #include "LSM6DS33.h"
 #include "display.h"
 #include "interrupt_handlers.h"
+#include "gyro.h"
 
 double speed = 0;    //mph
 double distance = 0; //miles
@@ -201,6 +202,8 @@ static void setup_lights() {
 void main(void) {
   
   printf_init();
+  gryo_init();
+  display_init();
   setup_lights();
   setup_interrupts();
   system_enable_interrupts();
@@ -214,10 +217,10 @@ void main(void) {
   // //MAGNET STUFF: see halleffect.c for doc
 
   //hall_effect();
-  //display_init();
+  //
   //display_run();
   //ACCELEROMETER STUFF
-
- run_accel();
+  display_run();
+ //run_accel();
   
 }
