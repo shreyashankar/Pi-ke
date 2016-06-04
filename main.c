@@ -202,7 +202,7 @@ static void setup_lights() {
 void main(void) {
   
   printf_init();
-  gryo_init();
+  gyro_init();
   display_init();
   setup_lights();
   setup_interrupts();

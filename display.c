@@ -14,8 +14,6 @@ extern double absolute_turn;
 #define DELAY 2500
 #define MILLION 1000000
 
-static 
-
 /* Initializes the GPIO pins for the display */
 void display_init() {
 	for (int i = DIGIT_GPIO_START; i <= DIGIT_GPIO_END; i++) {

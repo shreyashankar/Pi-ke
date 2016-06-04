@@ -3,6 +3,7 @@
 #include "timer.h"
 #include "printf.h"
 #include "reboot.h"
+#include "gyro.h"
 
 #include "gpio.h"
 #include "gpioextra.h"
@@ -30,7 +31,7 @@ unsigned readReg(unsigned char reg) {
 	return uc;
 }
 
-void gryo_init() {
+void gyro_init() {
 	uart_init();
 	timer_init();
 	delay_ms(30);   // allow time for device to boot up.
@@ -50,7 +51,7 @@ void gryo_init() {
 void gyro_delay(unsigned delay_micro) {
 	unsigned start_time = timer_get_time();
 	unsigned prev_time = start_time;
-	while (timer_get_time() - start_time() < delay_micro) {
+	while (timer_get_time() - start_time < delay_micro) {
 		unsigned char status;
 		// need to check GDA/XDA
 		while(((status = readReg(STATUS_REG)) & (0x2|0x1)) == 0) ;
@@ -66,8 +67,8 @@ void gyro_delay(unsigned delay_micro) {
 			unsigned int current_time = timer_get_time();
 			absolute_turn += (((double)z - STABLE_Z) * (current_time - prev_time)) / SCALING_FACTOR;
 			prev_time = current_time;
+		}
+
 	}
-
-
 }
 
