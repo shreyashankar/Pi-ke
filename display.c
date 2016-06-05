@@ -10,9 +10,11 @@ extern double speed;
 extern double distance;
 extern int mode;
 extern double absolute_turn;
+extern int last_rev_time;
 
 #define DELAY 2500
 #define MILLION 1000000
+#define TURN_OFF_TIME 1500000
 
 /* Initializes the GPIO pins for the display */
 void display_init() {
@@ -78,7 +80,8 @@ void display_seconds(int seconds) {
 		if (digitLoc == 1) {
 			gpio_write(GPIO_PIN27, 1); //write period
 		}
-		gyro_delay(DELAY);
+		//gyro_delay(DELAY);
+		delay_us(DELAY);
 		clearDigits();
 	}
 }
@@ -95,7 +98,8 @@ void display_num(double number, int numDec) {
 		}
 
 		rounded_number /= 10;
-		gyro_delay(DELAY);
+		//gyro_delay(DELAY);
+		delay_us(DELAY);
 		clearDigits();
 	}
 }
@@ -103,7 +107,7 @@ void display_num(double number, int numDec) {
 /* Dispalys the current speed variable with 1 decimal */
 void display_speed() {
 
-	display_num(absolute_turn,1);
+	display_num(speed,1);
 
 }
 
@@ -121,6 +125,10 @@ void display_run() {
 	while (1) {
 		//printf("%d\n", (int) absolute_turn);
 		//get the difference since starting in seconds
+		if ((timer_get_time() - last_rev_time) > TURN_OFF_TIME) {
+			gpio_write(BRAKE_LIGHT_PIN, 0);
+			speed = 0;
+		}
 		switch(mode) {
 			
 			case 0: ;

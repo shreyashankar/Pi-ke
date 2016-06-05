@@ -13,7 +13,7 @@ const unsigned vdd = GPIO_PIN6;
 const unsigned lsm6ds33_address = 0b1101011; // this is the gyro/accel;
 double absolute_turn = 0;
 
-#define STABLE_Z (-193.8)	//these three values determined experimentaly
+#define STABLE_Z (-193.8)	//these two values determined experimentaly
 #define SCALING_FACTOR (101973718)
 
 void writeReg(unsigned char reg, unsigned char v) {

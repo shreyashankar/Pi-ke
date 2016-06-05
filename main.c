@@ -189,6 +189,7 @@ double acceleration = 0;
 static void setup_lights() {
   gpio_set_function(LEFT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
   gpio_set_function(RIGHT_INDICATOR_LIGHT_PIN, GPIO_FUNC_OUTPUT);
+  gpio_set_function(BRAKE_LIGHT_PIN, GPIO_FUNC_OUTPUT);
 }
 
 /*static void setup_armtimer_interrupts() {
@@ -202,7 +203,9 @@ static void setup_lights() {
 void main(void) {
   
   printf_init();
-  gyro_init();
+  delay(3);
+  printf("hi\n");
+  //gyro_init();
   display_init();
   setup_lights();
   setup_interrupts();
