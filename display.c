@@ -2,9 +2,9 @@
 #include "timer.h"
 #include "display.h"
 #include "pin_constants.h"
-#include "printf.h"
 #include "assert.h"
 #include "gyro.h"
+#include "printf.h"
 
 extern double speed;
 extern double distance;
@@ -12,9 +12,18 @@ extern int mode;
 extern double absolute_turn;
 extern int last_rev_time;
 
+extern int right_on;
+extern int left_on;
+
 #define DELAY 2500
 #define MILLION 1000000
-#define TURN_OFF_TIME 1500000
+#define TURN_OFF_TIME 2000000
+
+#define CHECK_TURN_FREQ 500000 //half a second
+#define AMOUNT_TURN_REQ 45
+#define TURN_DONE_THRESHOLD 2
+
+
 
 /* Initializes the GPIO pins for the display */
 void display_init() {
@@ -25,10 +34,6 @@ void display_init() {
 	for (int i = SEGMENT_GPIO_START; i <= SEGMENT_GPIO_END; i++) {
 		gpio_set_output(i);//, GPIO_FUNC_OUTPUT);
 	}
-
-	//gpio_set_input(2);//, GPIO_FUNC_INPUT);
-	//gpio_set_input(3);//, GPIO_FUNC_INPUT);
-
 }
 
 /*
@@ -121,9 +126,60 @@ void display_run() {
 	unsigned int start_time = timer_get_time(); //when the clock starts
 	unsigned int offset = 0;  	//used when setting the time
 
+	unsigned turning_left = 0; 	//start as not turning
+	unsigned turning_right = 0;
+	double turning_start_dir = 0;
+
+	double turn_last_check = absolute_turn;
+	unsigned last_checked = timer_get_time();
 
 	while (1) {
-		printf("%d\n", (int) absolute_turn);
+		
+		if (left_on) {
+			if (turning_left == 0) {
+				turning_left = 1;
+				turning_start_dir = absolute_turn;
+			} else {
+				if (absolute_turn > turning_start_dir) {
+					turning_start_dir = absolute_turn;
+				}
+				if ((turning_start_dir - absolute_turn > AMOUNT_TURN_REQ) &&
+						(timer_get_time() - last_checked > CHECK_TURN_FREQ) &&
+						((turn_last_check - absolute_turn) < TURN_DONE_THRESHOLD)) {
+					left_on = 0;
+					turning_left = 0;
+					gpio_write(LEFT_INDICATOR_LIGHT_PIN, 0);
+				}
+			}
+		} else {
+			turning_left = 0;
+		}
+
+		if (right_on) {
+			if (turning_right == 0) {
+				turning_right = 1;
+				turning_start_dir = absolute_turn;
+			} else {
+				if (absolute_turn < turning_start_dir) {
+					turning_start_dir = absolute_turn;
+				}
+				if ((absolute_turn - turning_start_dir > AMOUNT_TURN_REQ) &&
+						(timer_get_time() - last_checked > CHECK_TURN_FREQ) &&
+						((absolute_turn - turn_last_check) < TURN_DONE_THRESHOLD)) {
+					right_on = 0;
+					turning_right = 0;
+					gpio_write(RIGHT_INDICATOR_LIGHT_PIN, 0);
+				}
+			}
+		} else {
+			turning_right = 0;
+		}
+
+		if (timer_get_time() - last_checked > CHECK_TURN_FREQ) {
+			turn_last_check = absolute_turn;
+			last_checked = timer_get_time();
+		}
+
 		//get the difference since starting in seconds
 		if ((timer_get_time() - last_rev_time) > TURN_OFF_TIME) {
 			gpio_write(BRAKE_LIGHT_PIN, 0);
@@ -145,12 +201,5 @@ void display_run() {
 				assert(0);
 		}
 
-
-		//check if both buttons are pressed; if so, switch modes
-		/*if ((gpio_read(2) == PRESSED) && (gpio_read(3) == PRESSED)) { //both pressed
-			offset = set_time(time_diff); 	//gives number of seconds set to
-			start_time = timer_get_time(); 	//reset start time
-		}*/
-		
 	}
 }

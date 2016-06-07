@@ -17,8 +17,9 @@
 #define SECONDS_IN_HOUR 3600
 #define ACCELERATION_THRESHOLD 1 // (miles per hour per second)
 
-static int left_on;
-static int right_on;
+int left_on;
+int right_on;
+
 static int current_time;
 static int indicator_interval_time;
 static double prev_speed = 0;

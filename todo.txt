@@ -1,2 +1,0 @@
-    - 64 bit time or different logic
-    - interrupt cleanup (and only 1 of falling/rising)

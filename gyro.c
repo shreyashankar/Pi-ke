@@ -13,8 +13,14 @@ const unsigned vdd = GPIO_PIN6;
 const unsigned lsm6ds33_address = 0b1101011; // this is the gyro/accel;
 double absolute_turn = 0;
 
-#define STABLE_Z (-193.8)	//these two values determined experimentaly
+#define STABLE_Z (-157.3)	//these two values determined experimentaly
 #define SCALING_FACTOR (101973718)
+
+
+/* These vars were used for calibration
+double total_z = 0;
+int numReads = 0;
+*/
 
 void writeReg(unsigned char reg, unsigned char v) {
 	char data[2];
@@ -34,9 +40,9 @@ unsigned readReg(unsigned char reg) {
 void gyro_init() {
 	uart_init();
 	timer_init();
-	delay_ms(30);   // allow time for device to boot up.
+	delay_us(30000);   // allow time for device to boot up.
 	i2c_init();
-	delay_ms(30);   // allow time to settle after init.
+	delay_us(30000);   // allow time to settle after init.
 
 	writeReg(CTRL10_C, 0x38);  // GYRO: enable x,y,z
 	writeReg(CTRL2_G, 0x60);   // 416Hz (high perf)
@@ -44,7 +50,7 @@ void gyro_init() {
 	writeReg(CTRL9_XL, 0x38);  // ACCEL: x,y,z enabled
 	writeReg(CTRL1_XL, 0x60);  // 
 
-	delay_ms(20);
+	delay_us(20000);
 }
 
 
@@ -66,8 +72,13 @@ void gyro_delay(unsigned delay_micro) {
 
 			unsigned int current_time = timer_get_time();
 			absolute_turn += (((double)z - STABLE_Z) * (current_time - prev_time)) / SCALING_FACTOR;
-			
 			prev_time = current_time;
+			/* Code for calibration
+			total_z += (double) z;
+			numReads ++;
+			printf("%d\n", (int) (1000 * total_z / numReads));
+			*/
+			
 		}
 
 	}
