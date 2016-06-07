@@ -80,8 +80,8 @@ void display_seconds(int seconds) {
 		if (digitLoc == 1) {
 			gpio_write(GPIO_PIN27, 1); //write period
 		}
-		//gyro_delay(DELAY);
-		delay_us(DELAY);
+		gyro_delay(DELAY);
+		//delay_us(DELAY);
 		clearDigits();
 	}
 }
@@ -98,8 +98,8 @@ void display_num(double number, int numDec) {
 		}
 
 		rounded_number /= 10;
-		//gyro_delay(DELAY);
-		delay_us(DELAY);
+		gyro_delay(DELAY);
+		//delay_us(DELAY);
 		clearDigits();
 	}
 }
@@ -123,7 +123,7 @@ void display_run() {
 
 
 	while (1) {
-		//printf("%d\n", (int) absolute_turn);
+		printf("%d\n", (int) absolute_turn);
 		//get the difference since starting in seconds
 		if ((timer_get_time() - last_rev_time) > TURN_OFF_TIME) {
 			gpio_write(BRAKE_LIGHT_PIN, 0);

@@ -114,15 +114,15 @@ static void hall_vector(unsigned pc) {
 		time_diff /= MICROSECONDS_IN_SECOND;
 		time_diff /= SECONDS_IN_HOUR;
 		speed = WHEEL_CIRCUMFERENCE / time_diff; 
-    acceleration = (speed - prev_speed) / (time_diff * 3600);
-    prev_speed = speed;
+
+    		acceleration = (speed - prev_speed) / (time_diff * 3600);
+    		prev_speed = speed;
     
-    if (acceleration < (-ACCELERATION_THRESHOLD)) {
-      gpio_write(BRAKE_LIGHT_PIN, 1);
-    } else {
-      gpio_write(BRAKE_LIGHT_PIN, 0 );
-    }
-    
+    		if (acceleration < (-ACCELERATION_THRESHOLD)) {
+      			gpio_write(BRAKE_LIGHT_PIN, 1);
+    		} else {
+      			gpio_write(BRAKE_LIGHT_PIN, 0 );
+    		}
 		//printf("magnet close\n");
 		last_rev_time = timer_get_time();
 	}

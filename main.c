@@ -203,9 +203,7 @@ static void setup_lights() {
 void main(void) {
   
   printf_init();
-  delay(3);
-  printf("hi\n");
-  //gyro_init();
+  gyro_init();
   display_init();
   setup_lights();
   setup_interrupts();
